@@ -74,7 +74,7 @@ const getUsdRatesData = () => {
         };
 
         return axios.get(url, config).then(response => {
-            return response.datal
+            return response.data;
         });     
     }
     catch (err) {

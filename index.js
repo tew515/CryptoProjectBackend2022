@@ -8,7 +8,6 @@ const serverName = 'http://localhost';
 // constants/function imports
 const coincapFunctions = require('./coincapFunctions');
 const coinbaseFunctions = require('./coinbaseFunctions');
-const { response } = require('express');
 
 // cache object
 let cachedData = {
@@ -53,7 +52,7 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
 };
 
 setCacheUpdateInterval(coincapFunctions.getBasicAssetData, {limit: 2000, offset: 0}, 300000, 'basicAssetData');
-
+setCacheUpdateInterval(coincapFunctions.getUsdRatesData, {}, 300000, 'usdRatesData');
 
 /*
 
@@ -61,11 +60,17 @@ loop to cache data every 5 minutes
 
 */
 
+app.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Methods', 'GET,POST');
+    res.append('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
 
 // url endpoints that return cached data
 app.get('/', (req, res) => {
     res.send(JSON.stringify({
-        data: [],
+        data: [0,1,2],
         err: []
     }));
 });
@@ -73,6 +78,13 @@ app.get('/', (req, res) => {
 app.get('/api/get/basicAssetData', (req, res) => {
     res.send(JSON.stringify({
         data: cachedData.basicAssetData,
+        err: []
+    }));
+});
+
+app.get('/api/get/usdRatesData', (req, res) => {
+    res.send(JSON.stringify({
+        data: cachedData.usdRatesData,
         err: []
     }));
 });
