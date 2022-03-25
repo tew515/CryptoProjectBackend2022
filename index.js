@@ -1,4 +1,5 @@
 // npm packages for the server to run
+const querystring = require('querystring');
 const express = require('express');
 const app = express ();
 const server = require('http').createServer(app);
@@ -12,6 +13,7 @@ const coinbaseFunctions = require('./coinbaseFunctions');
 // cache object
 let cachedData = {
     basicAssetData: undefined,
+    basicAssetList: undefined,
     historicalAssetData: undefined,
     usdRatesData: undefined,
 };
@@ -46,12 +48,16 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
                 } else {
                     cachedData[cacheLocation] = response;
                 }
-            });
+            }).catch(err => {
+                console.log(err.response.data)
+            })
         }, dataRefreshMs)
     }
 };
 
 setCacheUpdateInterval(coincapFunctions.getBasicAssetData, {limit: 2000, offset: 0}, 300000, 'basicAssetData');
+setCacheUpdateInterval(coincapFunctions.getBasicAssetList, {limit: 2000, offset: 0}, 60000*60*24, 'basicAssetList');
+// setCacheUpdateInterval(coincapFunctions.getHistoricalAssetData, {id: 'bitcoin', interval:'h2'}, 300000, 'historicalAssetData');
 setCacheUpdateInterval(coincapFunctions.getUsdRatesData, {}, 300000, 'usdRatesData');
 
 /*
@@ -82,11 +88,32 @@ app.get('/api/get/basicAssetData', (req, res) => {
     }));
 });
 
+app.get('/api/get/basicAssetList', (req, res) => {
+    res.send(JSON.stringify({
+        data: cachedData.basicAssetList,
+        err: []
+    }));
+});
+
 app.get('/api/get/usdRatesData', (req, res) => {
     res.send(JSON.stringify({
         data: cachedData.usdRatesData,
         err: []
     }));
+});
+
+app.get('/api/get/historicalAssetData', (req, res) => {
+    coincapFunctions.getHistoricalAssetData(Object.fromEntries(new URLSearchParams(req.query.queryString))).then(response => {
+        res.send(JSON.stringify({
+            data: response,
+            err: []
+        }));
+    }).catch(err => {
+        res.send(JSON.stringify({
+            data: [],
+            err: [err]
+        }));
+    })
 });
 
 // start the server on the listed port
