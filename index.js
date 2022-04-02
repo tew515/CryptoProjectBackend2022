@@ -1,5 +1,4 @@
 // npm packages for the server to run
-const querystring = require('querystring');
 const express = require('express');
 const app = express ();
 const server = require('http').createServer(app);
@@ -14,9 +13,11 @@ const coinbaseFunctions = require('./coinbaseFunctions');
 let cachedData = {
     basicAssetData: undefined,
     basicAssetList: undefined,
-    historicalAssetData: undefined,
+    historicalAssetData: {},
     usdRatesData: undefined,
 };
+
+let cachedErrors = [];
 
 // generic function that caches data based on parameters
 const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataRefreshMs, cacheLocation, dataProcessingFunction=undefined) => {
@@ -33,11 +34,11 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
             } else {
                 cachedData[cacheLocation] = response;
             }
-            // console.log(cachedData.basicAssetData)
-        });
+        }).catch(err => {
+            cachedErrors.push({ error: err?.response?.data, time: new Date() });
+        })
 
         setInterval(() => {
-
             let currentDate = new Date();
             let time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
             console.log('updated - time:', time)
@@ -49,7 +50,7 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
                     cachedData[cacheLocation] = response;
                 }
             }).catch(err => {
-                console.log(err.response.data)
+                cachedErrors.push({ error: err?.response?.data, time: new Date() });
             })
         }, dataRefreshMs)
     }
@@ -103,17 +104,49 @@ app.get('/api/get/usdRatesData', (req, res) => {
 });
 
 app.get('/api/get/historicalAssetData', (req, res) => {
-    coincapFunctions.getHistoricalAssetData(Object.fromEntries(new URLSearchParams(req.query.queryString))).then(response => {
-        res.send(JSON.stringify({
-            data: response,
-            err: []
-        }));
-    }).catch(err => {
-        res.send(JSON.stringify({
-            data: [],
-            err: [err]
-        }));
-    })
+    const queryParams = Object.fromEntries(new URLSearchParams(req.query));
+
+    // if the id has been run through the api before and it has been more than 5 mins since the last update then fetch the data again, reduces amount of api calls
+    if (cachedData.historicalAssetData.hasOwnProperty(queryParams.id)) {
+        if((new Date() - new Date(cachedData.historicalAssetData[queryParams.id].timestamp)) > 5*60*1000) {
+            coincapFunctions.getHistoricalAssetData(queryParams).then(response => {
+                cachedData.historicalAssetData[queryParams.id] = response;
+            
+                res.send(JSON.stringify({
+                    data: cachedData.historicalAssetData[queryParams.id],
+                    err: cachedErrors
+                }));
+            }).catch(err => {
+                cachedErrors.push({ error: err?.response?.data, time: new Date() });
+            
+                res.send(JSON.stringify({
+                    data: cachedData.historicalAssetData[queryParams.id],
+                    err: cachedErrors
+                }));
+            });
+        } else {
+            res.send(JSON.stringify({
+                data: cachedData.historicalAssetData[queryParams.id],
+                err: cachedErrors
+            }));
+        }
+    } else {
+        coincapFunctions.getHistoricalAssetData(queryParams).then(response => {
+            cachedData.historicalAssetData[queryParams.id] = response;
+            
+            res.send(JSON.stringify({
+                data: cachedData.historicalAssetData[queryParams.id],
+                err: cachedErrors
+            }));
+        }).catch(err => {
+            cachedErrors.push({ error: err?.response?.data, time: new Date() });
+            
+            res.send(JSON.stringify({
+                data: cachedData.historicalAssetData[queryParams.id],
+                err: cachedErrors
+            }));
+        });
+    }
 });
 
 // start the server on the listed port

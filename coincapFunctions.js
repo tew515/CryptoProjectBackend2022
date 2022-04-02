@@ -68,8 +68,6 @@ const getBasicAssetList = ({limit, offset}) => {
 const getHistoricalAssetData = ({id, interval, start, end}) => {    
     try {
         let url = constants.coincap.urls.initialPath + 'assets/' + id + '/history?interval=' + interval;
-
-        console.log(url)
     
         const config = {
             headers: {
@@ -93,7 +91,7 @@ const getHistoricalAssetData = ({id, interval, start, end}) => {
                     return elementTime >= start && elementTime <= end;
                 })
 
-                return filteredResponse;
+                return { data: filteredResponse, timestamp: response.data.timestamp };
             }
             return response.data;
         });   
