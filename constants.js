@@ -7,7 +7,7 @@ module.exports = {
             symbols: 'https://api.exchange.coinbase.com/currencies',
             currencies: 'https://api.coinbase.com/v2/currencies',
             exchangeRates: 'https://api.coinbase.com/v2/exchange-rates',
-            pricesInitialPath: 'https://api.coinbase.com/v2/prices/', // https://api.coinbase.com/v2/prices/:currency_pair/buy -> :currency_pair = BTC-USD etc.s
+            pricesInitialPath: 'https://api.coinbase.com/v2/prices/',
             pricesBuyPath: '/buy',
             pricesSellPath: '/sell',
         }
