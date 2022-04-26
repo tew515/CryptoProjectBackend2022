@@ -1,18 +1,15 @@
+// npm packages to make http requests
 const axios = require('axios').default;
+// import constant strings
 const constants = require('./constants');
-// d36fab29-2199-436c-83f9-2cd5f9734e94
 
+// return response for the coincap asset data 
 const getBasicAssetData = ({limit, offset}) => {
-    // const url = constants.coincap.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
-
-    // axios.get(url).then((response) => {
-    //     console.log(response.data.data);
-    // }).catch((error) => {
-    //     console.log(error);
-    // });
-    
     try {
-    const url = constants.coincap.urls.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
+        // define the url
+        const url = constants.coincap.urls.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
+
+        // define the http config
         const config = {
             headers: {
                 'Accept':'application/json',
@@ -30,17 +27,13 @@ const getBasicAssetData = ({limit, offset}) => {
     }
 }
 
+// return response for the coincap asset list
 const getBasicAssetList = ({limit, offset}) => {
-    // const url = constants.coincap.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
-
-    // axios.get(url).then((response) => {
-    //     console.log(response.data.data);
-    // }).catch((error) => {
-    //     console.log(error);
-    // });
-    
     try {
-    const url = constants.coincap.urls.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
+        // define the url
+        const url = constants.coincap.urls.initialPath + 'assets?limit=' + limit + "&offset=" + offset;
+        
+        // define the http config
         const config = {
             headers: {
                 'Accept':'application/json',
@@ -64,11 +57,13 @@ const getBasicAssetList = ({limit, offset}) => {
     }
 }
 
-// const getHistoricalAssetData = ({id, interval, start, end}) => { 
+// return response for the coincap historical data
 const getHistoricalAssetData = ({id, interval, start, end}) => {    
     try {
+        // define the url
         let url = constants.coincap.urls.initialPath + 'assets/' + id + '/history?interval=' + interval;
     
+        // define the http config
         const config = {
             headers: {
                 'Accept':'application/json',
@@ -78,6 +73,7 @@ const getHistoricalAssetData = ({id, interval, start, end}) => {
         };
 
         return axios.get(url, config).then(response => {
+            // filter data based on start and end time parameters
             if (start && end) {
                 if (start.toString().length === 10) {
                     start *= 1000;
@@ -101,9 +97,13 @@ const getHistoricalAssetData = ({id, interval, start, end}) => {
     }
 }
 
+// return response for the coincap exchange rate data
 const getUsdRatesData = () => {
     try {
+        // define the url
         const url = constants.coincap.urls.initialPath + 'rates';
+
+        // define the http config
         const config = {
             headers: {
                 'Accept':'application/json',
@@ -122,8 +122,8 @@ const getUsdRatesData = () => {
 }
 
 module.exports = {
-    getBasicAssetData, // getBasicAssetData(2000, 0);
+    getBasicAssetData,
     getBasicAssetList,
-    getHistoricalAssetData, // getHistoricalAssetData('bitcoin', 'h2'); getHistoricalAssetData('bitcoin', 'h2', 1641528000000, 1641535200000);
-    getUsdRatesData, // getUsdRatesData();
+    getHistoricalAssetData,
+    getUsdRatesData,
 }

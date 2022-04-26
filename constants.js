@@ -1,3 +1,4 @@
+// common strings used in the project
 module.exports = {
     coinbase: {
         secret : 'dc935ff04840f5a72a7c31ca78c0d59fbb7c82c4bcce3800949bb477950df8d9',
