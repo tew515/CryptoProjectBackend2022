@@ -35,7 +35,9 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
                 cachedData[cacheLocation] = response;
             }
         }).catch(err => {
-            cachedErrors.push({ error: err?.response?.data, time: new Date() });
+            if (err?.response?.data) {
+                cachedErrors.push({ error: err.response.data, time: new Date() });
+            }
         })
 
         setInterval(() => {
@@ -50,7 +52,9 @@ const setCacheUpdateInterval = (functionToCache=undefined, functionParams, dataR
                     cachedData[cacheLocation] = response;
                 }
             }).catch(err => {
-                cachedErrors.push({ error: err?.response?.data, time: new Date() });
+                if (err?.response?.data) {
+                    cachedErrors.push({ error: err.response.data, time: new Date() });
+                }
             })
         }, dataRefreshMs)
     }
@@ -117,7 +121,9 @@ app.get('/api/get/historicalAssetData', (req, res) => {
                     err: cachedErrors
                 }));
             }).catch(err => {
-                cachedErrors.push({ error: err?.response?.data, time: new Date() });
+                if (err?.response?.data) {
+                    cachedErrors.push({ error: err.response.data, time: new Date() });
+                }
             
                 res.send(JSON.stringify({
                     data: cachedData.historicalAssetData[queryParams.id],
@@ -139,7 +145,9 @@ app.get('/api/get/historicalAssetData', (req, res) => {
                 err: cachedErrors
             }));
         }).catch(err => {
-            cachedErrors.push({ error: err?.response?.data, time: new Date() });
+            if (err?.response?.data) {
+                cachedErrors.push({ error: err.response.data, time: new Date() });
+            }
             
             res.send(JSON.stringify({
                 data: cachedData.historicalAssetData[queryParams.id],
